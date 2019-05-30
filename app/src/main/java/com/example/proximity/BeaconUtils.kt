@@ -14,7 +14,7 @@ object BeaconUtils {
     private val defaultRange = 1.0
     val beaconZones = ArrayList<ProximityZone>()
     var listener: BeaconListener? = null
-    private val zone = "table"
+    val zone = "table"
 
     private var lastBeaconDate: Date? = null
 

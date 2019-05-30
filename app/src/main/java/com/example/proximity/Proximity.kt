@@ -20,6 +20,8 @@ import android.util.Log
 import com.estimote.proximity_sdk.api.EstimoteCloudCredentials
 import com.estimote.proximity_sdk.api.ProximityObserver
 import com.estimote.proximity_sdk.api.ProximityObserverBuilder
+import java.util.*
+import kotlin.concurrent.schedule
 
 
 class Proximity: Service(), BeaconUtils.BeaconListener{
@@ -27,6 +29,8 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
     private var mObservationHandler: ProximityObserver.Handler? = null
     // enter 0 exit 1 for sliding window (or should from outside)
     private var stateSign :Int? = null
+    private var stateArray = ArrayList<Int>()
+
 
     // Cloud credentials found from https://cloud.estimote.com/
     private val cloudCredentials =
@@ -35,6 +39,7 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
     override fun onCreate() {
         super.onCreate()
         BeaconUtils.listener = this
+
 
     }
 
@@ -64,7 +69,6 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
         Log.d("onEnterZone",tag)
         stateSign = 0
 
-
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -73,6 +77,39 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
         stateSign = 1
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    // read stateSign every 1s and using this for sliding window
+    private fun realState(): String?{
+        Timer().schedule(2000) {
+            stateSign?.let {
+                stateArray.add(it)
+            }
+        }
+        val window = stateArray.windowed(size = 5, step = 1)
+        val windowAve = window.map { it.average() }
+        val lastAve: Double? = windowAve.lastOrNull()
+        var result: String? = null
+        lastAve?.let {
+            when (it) {
+                0.4 -> {
+                    val checkState = windowAve.elementAt(windowAve.size - 2)
+                    if (checkState > 0.4) {
+                        result = "Enter ${BeaconUtils.zone} zone"
+                    }
+                }
+                0.6 -> {
+                    val checkState = windowAve.elementAt(windowAve.size - 2)
+                    if (checkState < 0.6) {
+                        result = "Exit ${BeaconUtils.zone} zone"
+
+                    }
+                }
+
+            }
+        }
+       return result
+    }
+
 }
 
 
