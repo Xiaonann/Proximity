@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
         <!--start service-->
+        <service android:name=".Proximity" />
 
     </application>
 

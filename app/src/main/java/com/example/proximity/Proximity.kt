@@ -30,6 +30,8 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
     // enter 0 exit 1 for sliding window (or should from outside)
     private var stateSign :Int? = null
     private var stateArray = ArrayList<Int>()
+    val timer = Timer()
+
 
 
     // Cloud credentials found from https://cloud.estimote.com/
@@ -65,26 +67,27 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
         return null
     }
 
-    override fun onEnterZone(tag: String) {
+    override fun onEnterZone(tag: String):Int {
         Log.d("onEnterZone",tag)
         stateSign = 0
+        return 0
 
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onExitZone(tag: String) {
-        Log.d("onExitZone",tag)
+        Log.d("onExitZone", tag)
         stateSign = 1
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+
     // read stateSign every 1s and using this for sliding window
-    private fun realState(): String?{
-        Timer().schedule(2000) {
+     fun realState(): String?{
+        Timer().schedule(1000) {
             stateSign?.let {
                 stateArray.add(it)
             }
         }
+        Log.d("TEST","$stateArray")
         val window = stateArray.windowed(size = 5, step = 1)
         val windowAve = window.map { it.average() }
         val lastAve: Double? = windowAve.lastOrNull()

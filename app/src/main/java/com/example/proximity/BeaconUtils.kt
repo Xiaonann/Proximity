@@ -7,14 +7,14 @@ import java.util.*
 
 object BeaconUtils {
     interface BeaconListener{
-        fun onEnterZone(tag: String)
+        fun onEnterZone(tag: String):Int
         fun onExitZone(tag: String)
 
     }
     private val defaultRange = 1.0
     val beaconZones = ArrayList<ProximityZone>()
     var listener: BeaconListener? = null
-    val zone = "table"
+    val zone = "purple2"
 
     private var lastBeaconDate: Date? = null
 
