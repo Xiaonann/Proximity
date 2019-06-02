@@ -21,6 +21,7 @@
         </activity>
         <!--start service-->
         <service android:name=".Proximity" />
+        <service android:name=".SocketServer" />
 
     </application>
 

@@ -7,6 +7,8 @@ package com.example.proximity
  */
 
 import android.app.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import com.estimote.mustard.rx_goodness.rx_requirements_wizard.Requirement
@@ -24,11 +26,11 @@ import java.util.*
 import kotlin.concurrent.schedule
 
 
-class Proximity: Service(), BeaconUtils.BeaconListener{
+class Proximity: Service(), BeaconUtils.BeaconListener {
 
     private var mObservationHandler: ProximityObserver.Handler? = null
     // enter 0 exit 1 for sliding window (or should from outside)
-    private var stateSign :Int? = null
+    private var stateSign: Int? = null
     private var stateArray = ArrayList<Int>()
     val timer = Timer()
 
@@ -48,7 +50,7 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val proximityObserver = ProximityObserverBuilder(applicationContext, cloudCredentials)
             .withBalancedPowerMode()
-            .onError { throwable: Throwable ->  Log.d("Beacons",throwable.toString()) }
+            .onError { throwable: Throwable -> Log.d("Beacons", throwable.toString()) }
             .build()
 
         mObservationHandler = proximityObserver.startObserving(BeaconUtils.beaconZones)
@@ -61,15 +63,23 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
         super.onDestroy()
         mObservationHandler?.stop()
 
+
     }
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
     }
 
-    override fun onEnterZone(tag: String):Int {
-        Log.d("onEnterZone",tag)
+    override fun onEnterZone(tag: String): Int {
+        Log.d("onEnterZone", tag)
         stateSign = 0
+
+        // send zone info to server
+        val broadCastingIntent = Intent()
+        broadCastingIntent.action = "proximity result to server socket"
+        broadCastingIntent.putExtra("zone",tag)
+        sendBroadcast(broadCastingIntent)
+
         return 0
 
     }
@@ -81,13 +91,13 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
 
 
     // read stateSign every 1s and using this for sliding window
-     fun realState(): String?{
+    fun realState(): String? {
         Timer().schedule(1000) {
             stateSign?.let {
                 stateArray.add(it)
             }
         }
-        Log.d("TEST","$stateArray")
+        Log.d("TEST", "$stateArray")
         val window = stateArray.windowed(size = 5, step = 1)
         val windowAve = window.map { it.average() }
         val lastAve: Double? = windowAve.lastOrNull()
@@ -110,8 +120,10 @@ class Proximity: Service(), BeaconUtils.BeaconListener{
 
             }
         }
-       return result
+        return result
     }
+
+
 
 }
 
