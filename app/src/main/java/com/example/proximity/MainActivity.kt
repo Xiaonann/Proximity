@@ -23,18 +23,14 @@ class MainActivity : AppCompatActivity() {
             this,
             onRequirementsFulfilled = {
                 Log.d("Beacons","onRequirementsFulfilled")
-                bluetoothScanner = EstimoteBluetoothScannerFactory(applicationContext).getSimpleScanner()
-                Log.d("beacon","${bluetoothScanner}")
 
+                // start proximity service
+                val proximityServiceIntent = Intent(this,Proximity::class.java)
+                Proximity.enqueueWork(this,proximityServiceIntent)
 
-                val sticker = bluetoothScanner
-                    .estimoteLocationScan()
-                    .withBalancedPowerMode()
-                    .withOnPacketFoundAction {
-                        Log.d("sticker","${it.deviceId}")
-
-                    }
-                this.startService(Intent(this,Proximity::class.java))
+                // start SocketServer Service
+                //val socketServerServiceIntent = Intent(this,SocketServerService::class.java)
+                //SocketServerService.enqueueWork(this,socketServerServiceIntent)
 
             },
             onRequirementsMissing = {},
@@ -45,5 +41,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
     }
 }

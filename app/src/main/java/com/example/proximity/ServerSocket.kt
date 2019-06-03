@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.support.v4.app.JobIntentService
 import android.util.Log
 import java.io.*
 import java.net.ServerSocket
@@ -21,9 +22,11 @@ import java.net.Socket
  */
 
 
-private const val TAG = "SOCKETSERVER_SERVICE"
+private const val port = 8080
 
-class SocketServer : IntentService(TAG){
+class SocketServerService : JobIntentService(){
+
+
     private var server: ServerSocket? = null
     private var input: InputStream? = null
     private var output: OutputStream? = null
@@ -33,10 +36,6 @@ class SocketServer : IntentService(TAG){
     private var broadcastReceiver : BroadcastReceiver? = null
 
     // initial server socket
-    companion object{
-        const val port = 8080
-        //
-    }
     init {
         try {
             server = ServerSocket(port)
@@ -45,18 +44,38 @@ class SocketServer : IntentService(TAG){
         }
 
     }
+    companion object{
+
+        private const val jobId = 7777
+        fun enqueueWork(context: Context, work: Intent = Intent()) {
+            enqueueWork(context, SocketServerService::class.java, jobId, work)
+        }
+    }
+
     /**
      * The IntentService calls this method from the default worker thread with
      * the intent that started the service. When this method returns, IntentService
      * stops the service, as appropriate.
      */
-    override fun onHandleIntent(intent: Intent?){
-        beginListen()
+    override fun onHandleWork(p0: Intent) {
+        //val test = registerReceiver()
+        Log.d("ServerSocketXXX","success")
+        //beginListen()
+
+
+    }
+    override fun onStopCurrentWork(): Boolean {
+        Log.d("stop","stop")
+        return false
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("ServerSocket","onDestory")
+
     }
 
     // build a server socket with specific port
-
-
 
     //listen data from socket
     fun beginListen() {
@@ -76,7 +95,7 @@ class SocketServer : IntentService(TAG){
                         output?.let {
                             val out = DataOutputStream(it)
                             //test text
-                            sendMsg = registerReceiver()
+                            sendMsg = "12"
                             //val testText = "proximity"
                             out.writeUTF(sendMsg)
                             out.flush()
@@ -100,16 +119,5 @@ class SocketServer : IntentService(TAG){
 
 
     //
-    private fun registerReceiver() :String? {
-        val filter = IntentFilter("proximity result to server socket")
-        registerReceiver(broadcastReceiver, filter)
-        var proximityResult :String? = null
-        broadcastReceiver = object : BroadcastReceiver(){
-            override fun onReceive(context: Context?, intent: Intent?) {
-                proximityResult = intent!!.getStringExtra("zone")
-            }
 
-        }
-        return proximityResult
-    }
 }

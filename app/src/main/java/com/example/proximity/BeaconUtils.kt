@@ -7,7 +7,7 @@ import java.util.*
 
 object BeaconUtils {
     interface BeaconListener{
-        fun onEnterZone(tag: String):Int
+        fun onEnterZone(tag: String)
         fun onExitZone(tag: String)
 
     }

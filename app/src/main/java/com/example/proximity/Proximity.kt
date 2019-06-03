@@ -16,6 +16,7 @@ import com.estimote.mustard.rx_goodness.rx_requirements_wizard.RequirementsWizar
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.support.v4.app.JobIntentService
 import android.support.v4.app.NotificationCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -26,7 +27,7 @@ import java.util.*
 import kotlin.concurrent.schedule
 
 
-class Proximity: Service(), BeaconUtils.BeaconListener {
+class Proximity: JobIntentService(), BeaconUtils.BeaconListener {
 
     private var mObservationHandler: ProximityObserver.Handler? = null
     // enter 0 exit 1 for sliding window (or should from outside)
@@ -34,53 +35,55 @@ class Proximity: Service(), BeaconUtils.BeaconListener {
     private var stateArray = ArrayList<Int>()
     val timer = Timer()
 
-
+    companion object{
+        private const val jobId = 1010
+        fun enqueueWork(context: Context, work: Intent = Intent()) {
+            enqueueWork(context, SocketServerService::class.java, jobId, work)
+        }
+    }
 
     // Cloud credentials found from https://cloud.estimote.com/
     private val cloudCredentials =
         EstimoteCloudCredentials("laboratorium-dibris-gmail--kfg", "90e1b9d8344624e9c2cd42b9f5fd6392")
 
-    override fun onCreate() {
-        super.onCreate()
+    override fun onHandleWork(p0: Intent) {
+        Log.d("ProximityXXX","success")
         BeaconUtils.listener = this
-
-
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val proximityObserver = ProximityObserverBuilder(applicationContext, cloudCredentials)
             .withBalancedPowerMode()
             .onError { throwable: Throwable -> Log.d("Beacons", throwable.toString()) }
             .build()
 
         mObservationHandler = proximityObserver.startObserving(BeaconUtils.beaconZones)
+        Log.d("Proximity","$mObservationHandler")
 
-        return START_NOT_STICKY
+        //if(isStopped) return
 
+    }
+
+    override fun onStopCurrentWork(): Boolean {
+        return false
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mObservationHandler?.stop()
-
+        Log.d("proximity","onDestory")
 
     }
 
-    override fun onBind(p0: Intent?): IBinder? {
-        return null
-    }
 
-    override fun onEnterZone(tag: String): Int {
+
+
+    override fun onEnterZone(tag: String) {
         Log.d("onEnterZone", tag)
         stateSign = 0
 
         // send zone info to server
-        val broadCastingIntent = Intent()
-        broadCastingIntent.action = "proximity result to server socket"
-        broadCastingIntent.putExtra("zone",tag)
-        sendBroadcast(broadCastingIntent)
-
-        return 0
+        //val broadCastingIntent = Intent()
+        //broadCastingIntent.action = "proximity result to server socket"
+        //broadCastingIntent.putExtra("zone",tag)
+        //sendBroadcast(broadCastingIntent)
 
     }
 
