@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
         <!--start service-->
-        <service android:name=".Proximity"
+        <service android:name=".ProximityService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>
         <service android:name=".SocketServerService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>

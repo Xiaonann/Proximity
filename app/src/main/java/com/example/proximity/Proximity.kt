@@ -27,7 +27,7 @@ import java.util.*
 import kotlin.concurrent.schedule
 
 
-class Proximity: JobIntentService(), BeaconUtils.BeaconListener {
+class ProximityService: JobIntentService(), BeaconUtils.BeaconListener {
 
     private var mObservationHandler: ProximityObserver.Handler? = null
     // enter 0 exit 1 for sliding window (or should from outside)
@@ -38,7 +38,7 @@ class Proximity: JobIntentService(), BeaconUtils.BeaconListener {
     companion object{
         private const val jobId = 1010
         fun enqueueWork(context: Context, work: Intent = Intent()) {
-            enqueueWork(context, SocketServerService::class.java, jobId, work)
+            enqueueWork(context, ProximityService::class.java, jobId, work)
         }
     }
 
@@ -46,7 +46,7 @@ class Proximity: JobIntentService(), BeaconUtils.BeaconListener {
     private val cloudCredentials =
         EstimoteCloudCredentials("laboratorium-dibris-gmail--kfg", "90e1b9d8344624e9c2cd42b9f5fd6392")
 
-    override fun onHandleWork(p0: Intent) {
+    override fun onHandleWork(intent: Intent) {
         Log.d("ProximityXXX","success")
         BeaconUtils.listener = this
         val proximityObserver = ProximityObserverBuilder(applicationContext, cloudCredentials)
@@ -55,36 +55,36 @@ class Proximity: JobIntentService(), BeaconUtils.BeaconListener {
             .build()
 
         mObservationHandler = proximityObserver.startObserving(BeaconUtils.beaconZones)
-        Log.d("Proximity","$mObservationHandler")
+        //Log.d("Proximity","$mObservationHandler")
 
-        //if(isStopped) return
 
-    }
-
-    override fun onStopCurrentWork(): Boolean {
-        return false
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mObservationHandler?.stop()
-        Log.d("proximity","onDestory")
 
     }
 
+    /*override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val proximityObserver = ProximityObserverBuilder(applicationContext, cloudCredentials)
+            .withBalancedPowerMode()
+            .onError { throwable: Throwable -> Log.d("Beacons", throwable.toString()) }
+            .build()
+
+        mObservationHandler = proximityObserver.startObserving(BeaconUtils.beaconZones)
+
+        return START_NOT_STICKY
+
+    }*/
 
 
 
     override fun onEnterZone(tag: String) {
-        Log.d("onEnterZone", tag)
+
         stateSign = 0
 
         // send zone info to server
-        //val broadCastingIntent = Intent()
-        //broadCastingIntent.action = "proximity result to server socket"
-        //broadCastingIntent.putExtra("zone",tag)
-        //sendBroadcast(broadCastingIntent)
-
+        val broadCastingIntent = Intent()
+        broadCastingIntent.action = "proximity result to server socket"
+        broadCastingIntent.putExtra("zone",tag)
+        sendBroadcast(broadCastingIntent)
+        Log.d("onEnterZone", "$broadCastingIntent")
     }
 
     override fun onExitZone(tag: String) {

@@ -22,7 +22,7 @@ import java.net.Socket
  */
 
 
-private const val port = 8080
+private const val TAG = "SOCKETSERVER_SERVICE"
 
 class SocketServerService : JobIntentService(){
 
@@ -36,7 +36,15 @@ class SocketServerService : JobIntentService(){
     private var broadcastReceiver : BroadcastReceiver? = null
 
     // initial server socket
+    companion object{
+        const val port = 8080
+        private const val jobId = 7777
+        fun enqueueWork(context: Context, work: Intent = Intent()) {
+            enqueueWork(context, SocketServerService::class.java, jobId, work)
+        }
+    }
     init {
+
         try {
             server = ServerSocket(port)
         } catch (e: IOException) {
@@ -44,35 +52,31 @@ class SocketServerService : JobIntentService(){
         }
 
     }
-    companion object{
-
-        private const val jobId = 7777
-        fun enqueueWork(context: Context, work: Intent = Intent()) {
-            enqueueWork(context, SocketServerService::class.java, jobId, work)
-        }
-    }
-
     /**
      * The IntentService calls this method from the default worker thread with
      * the intent that started the service. When this method returns, IntentService
      * stops the service, as appropriate.
      */
-    override fun onHandleWork(p0: Intent) {
+    override fun onHandleWork(intent: Intent) {
         //val test = registerReceiver()
-        Log.d("ServerSocketXXX","success")
+        var s:String?=null
+        broadcastReceiver = object : BroadcastReceiver(){
+            override fun onReceive(context: Context?, intent: Intent?) {
+                s = intent!!.getStringExtra("zone")
+            }
+
+        }
+        val filter = IntentFilter("proximity result to server socket")
+        registerReceiver(broadcastReceiver, filter)
+        Log.d("ServerSocketXXX","$s")
         //beginListen()
+        //if(isStopped) return
 
-
-    }
-    override fun onStopCurrentWork(): Boolean {
-        Log.d("stop","stop")
-        return false
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-        Log.d("ServerSocket","onDestory")
-
+        unregisterReceiver(broadcastReceiver)
+        Log.d("ServerSocketXXX","kill")
     }
 
     // build a server socket with specific port
@@ -95,7 +99,7 @@ class SocketServerService : JobIntentService(){
                         output?.let {
                             val out = DataOutputStream(it)
                             //test text
-                            sendMsg = "12"
+                            sendMsg = registerReceiver()
                             //val testText = "proximity"
                             out.writeUTF(sendMsg)
                             out.flush()
@@ -119,5 +123,17 @@ class SocketServerService : JobIntentService(){
 
 
     //
+    private fun registerReceiver() :String? {
 
+        var proximityResult :String? = null
+        broadcastReceiver = object : BroadcastReceiver(){
+            override fun onReceive(context: Context?, intent: Intent?) {
+                proximityResult = intent!!.getStringExtra("zone")
+            }
+
+        }
+        val filter = IntentFilter("proximity result to server socket")
+        registerReceiver(broadcastReceiver, filter)
+        return proximityResult
+    }
 }

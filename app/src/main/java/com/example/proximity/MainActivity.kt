@@ -25,12 +25,13 @@ class MainActivity : AppCompatActivity() {
                 Log.d("Beacons","onRequirementsFulfilled")
 
                 // start proximity service
-                val proximityServiceIntent = Intent(this,Proximity::class.java)
-                Proximity.enqueueWork(this,proximityServiceIntent)
+                val proximityServiceIntent = Intent(this,ProximityService::class.java)
+                ProximityService.enqueueWork(this,proximityServiceIntent)
+
 
                 // start SocketServer Service
-                //val socketServerServiceIntent = Intent(this,SocketServerService::class.java)
-                //SocketServerService.enqueueWork(this,socketServerServiceIntent)
+                val socketServerServiceIntent = Intent(this,SocketServerService::class.java)
+                SocketServerService.enqueueWork(this,socketServerServiceIntent)
 
             },
             onRequirementsMissing = {},
@@ -38,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         )
 
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
