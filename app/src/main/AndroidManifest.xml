@@ -21,10 +21,15 @@
             </intent-filter>
         </activity>
         <!--start service-->
-        <service android:name=".ProximityService"
-                 android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <service android:name=".ProximityService"/>
         <service android:name=".SocketServerService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <receiver android:name=".BroadcastReceiverTest">
+        <intent-filter>
+            <action android:name="proximity result to server socket"/>
+        </intent-filter>
+        </receiver>
+
 
     </application>
 

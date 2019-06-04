@@ -25,7 +25,7 @@ import java.net.Socket
 private const val TAG = "SOCKETSERVER_SERVICE"
 
 class SocketServerService : JobIntentService(){
-
+lateinit var receiver :BroadcastReceiverTest
 
     private var server: ServerSocket? = null
     private var input: InputStream? = null
@@ -58,8 +58,13 @@ class SocketServerService : JobIntentService(){
      * stops the service, as appropriate.
      */
     override fun onHandleWork(intent: Intent) {
+        val string = intent.getStringExtra("test")
+        beginListen()
+        //val s =receiver.proximityResult
+        //Log.d("ServerSocketService","$s")
+
         //val test = registerReceiver()
-        var s:String?=null
+       /* var s:String?=null
         broadcastReceiver = object : BroadcastReceiver(){
             override fun onReceive(context: Context?, intent: Intent?) {
                 s = intent!!.getStringExtra("zone")
@@ -68,15 +73,24 @@ class SocketServerService : JobIntentService(){
         }
         val filter = IntentFilter("proximity result to server socket")
         registerReceiver(broadcastReceiver, filter)
-        Log.d("ServerSocketXXX","$s")
-        //beginListen()
+        Log.d("ServerSocketXXX","$s")*/
+
         //if(isStopped) return
 
     }
 
     override fun onDestroy() {
-        unregisterReceiver(broadcastReceiver)
+        val sevice = Intent(this,SocketServerService::class.java)
+        this.startService(sevice)
+        super.onDestroy()
+        //unregisterReceiver(broadcastReceiver)
         Log.d("ServerSocketXXX","kill")
+    }
+
+    override fun onStopCurrentWork(): Boolean {
+        Log.d("ServerSocketXXX","onstop")
+        return super.onStopCurrentWork()
+
     }
 
     // build a server socket with specific port
@@ -99,7 +113,7 @@ class SocketServerService : JobIntentService(){
                         output?.let {
                             val out = DataOutputStream(it)
                             //test text
-                            sendMsg = registerReceiver()
+                            sendMsg = "12"
                             //val testText = "proximity"
                             out.writeUTF(sendMsg)
                             out.flush()
@@ -123,7 +137,7 @@ class SocketServerService : JobIntentService(){
 
 
     //
-    private fun registerReceiver() :String? {
+    /*private fun registerReceiver() :String? {
 
         var proximityResult :String? = null
         broadcastReceiver = object : BroadcastReceiver(){
@@ -135,5 +149,5 @@ class SocketServerService : JobIntentService(){
         val filter = IntentFilter("proximity result to server socket")
         registerReceiver(broadcastReceiver, filter)
         return proximityResult
-    }
+    }*/
 }
