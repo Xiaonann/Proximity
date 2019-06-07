@@ -80,8 +80,8 @@ lateinit var receiver :BroadcastReceiverTest
     }
 
     override fun onDestroy() {
-        val sevice = Intent(this,SocketServerService::class.java)
-        this.startService(sevice)
+        //val sevice = Intent(this,SocketServerService::class.java)
+        //this.startService(sevice)
         super.onDestroy()
         //unregisterReceiver(broadcastReceiver)
         Log.d("ServerSocketXXX","kill")

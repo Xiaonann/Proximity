@@ -4,7 +4,8 @@
 
     <!--permission for internet using for socket-->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
 
     <application
             android:allowBackup="true"
@@ -21,7 +22,14 @@
             </intent-filter>
         </activity>
         <!--start service-->
-        <service android:name=".ProximityService"/>
+        <service
+                android:name=".TryServerService"/>
+
+
+        <service android:name=".ProximityService"
+                 android:enabled="true"
+                 android:exported="false" >
+        </service>
         <service android:name=".SocketServerService"
                  android:permission="android.permission.BIND_JOB_SERVICE"/>
         <receiver android:name=".BroadcastReceiverTest">
