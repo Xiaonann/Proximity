@@ -100,6 +100,7 @@ lateinit var receiver :BroadcastReceiverTest
         try {
             //try to connect with client socket
             socket = server?.accept()
+            Log.d("Sign for Socket","$socket")
             // get data from client socket
             try {
                 input = socket?.getInputStream()

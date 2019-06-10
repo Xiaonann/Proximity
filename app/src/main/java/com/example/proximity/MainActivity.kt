@@ -17,37 +17,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     //private lateinit var bluetoothScanner: BluetoothScanner
 
-    private lateinit var myService :TryServerService
+    private lateinit var mySocketService :TryServerService
+    private lateinit var myStickerService :Sticker
     private var boundService = false
-
-    /**bind to the server service can define a fun then run it on onCreate() or other places
-    or start intent and bindService on onCreate() then define a val = object:ServiceConnection
-    then override fun onServiceConnected
-     */
-
-    // way 1 after that can use myService to get all PUBLIC methods in TryServerService
-    /** Defines callbacks for service binding, passed to bindService()  */
-    private val serveSocketConnection = object : ServiceConnection {
-        private val tag = this.javaClass.name
-        // the client use IBinder to communicate with the bound service.
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            Log.d("bindservice","success")
-            // We've bound to TryServerService, cast the IBinder and get TryServerService instance
-            val binder = service as TryServerService.TryServerBinder
-            myService = binder.getService()
-            boundService = true
-            myService.initSocket()
-            //tv_pepper.text = myService.receive
-            Log.d("Msg from client", "${myService.receive}")
-        }
-
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            boundService = false
-        }
-    }
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +28,10 @@ class MainActivity : AppCompatActivity() {
         // for bind server socket way1 can also written in onStart
         Intent(this, TryServerService::class.java).also { intent ->
             bindService(intent, serveSocketConnection, Context.BIND_AUTO_CREATE)
+        }
+        // bind sticker service
+        Intent(this, Sticker::class.java).also { intent ->
+            bindService(intent, stickerConnection, Context.BIND_AUTO_CREATE)
         }
 
 
@@ -73,22 +49,67 @@ class MainActivity : AppCompatActivity() {
             onRequirementsMissing = {},
             onError = {}
         )
+        bt_pepper.setOnClickListener {
+
+           // mySocketService.receive?.let { tv_pepper.text = it}
+            //Log.d("Msg from client", "${myService.receive}")
+            //myStickerService.startSticker()?.let { tv_pepper.text = it }
+            //Log.d("Msg from client", "${myStickerService.startSticker()}")
+
+        }
+
+
 
     }
-
-
-
-    override fun onStart() {
-        super.onStart()
-
-    }
-
-
 
 
     //way 2
     private fun bindServeSocket(){
 
+    }
+    /**bind to the server service can define a fun then run it on onCreate() or other places
+    or start intent and bindService on onCreate() then define a val = object:ServiceConnection
+    then override fun onServiceConnected
+     */
+
+    // way 1 after that can use myService to get all PUBLIC methods in TryServerService
+    /** Defines callbacks for service binding, passed to bindService()  */
+    private val serveSocketConnection = object : ServiceConnection {
+        private val tag = this.javaClass.name
+        // the client use IBinder to communicate with the bound service.
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            //Log.d("bindservice","success")
+            // We've bound to TryServerService, cast the IBinder and get TryServerService instance
+            val socketBinder = service as TryServerService.TryServerBinder
+            mySocketService = socketBinder.getService()
+            boundService = true
+            mySocketService.initSocket()
+
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            boundService = false
+        }
+    }
+
+    // for bind sticker service
+
+    private val stickerConnection = object : ServiceConnection {
+        // the client use IBinder to communicate with the bound service.
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            //Log.d("bindservice","success")
+            // We've bound to TryServerService, cast the IBinder and get TryServerService instance
+            val stickerBinder = service as Sticker.StickerBinder
+            myStickerService = stickerBinder.getService()
+            val test = myStickerService.startSticker()
+            Log.d("main","$test")
+            boundService = true
+
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            boundService = false
+        }
     }
 
 
@@ -96,10 +117,11 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unbindService(serveSocketConnection)
+        unbindService(stickerConnection)
         //if implement the onStartCommand() callback method, must explicitly stop the service,
         val proximityServiceIntent = Intent(this,ProximityService::class.java)
         stopService(proximityServiceIntent)
-        Log.d("main","proximityDestory")
+        //Log.d("main","proximityDestory")
         //val intent = Intent(this, TryServerService::class.java)
         //stopService(intent)
 

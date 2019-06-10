@@ -23,7 +23,9 @@
         </activity>
         <!--start service-->
         <service
-                android:name=".TryServerService"/>
+            android:name=".TryServerService"/>
+        <service
+                android:name=".Sticker"/>
 
 
         <service android:name=".ProximityService"

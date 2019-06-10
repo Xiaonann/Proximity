@@ -24,6 +24,8 @@ import com.estimote.proximity_sdk.api.ProximityObserver
 import com.estimote.proximity_sdk.api.ProximityObserverBuilder
 import java.util.*
 import kotlin.concurrent.schedule
+import com.estimote.proximity_sdk.api.ProximityZone
+
 
 private const val TAG = "ProximityService"
 class ProximityService: Service(), BeaconUtils.BeaconListener {
@@ -58,7 +60,7 @@ class ProximityService: Service(), BeaconUtils.BeaconListener {
         //private val tag = this.javaClass.name
         // the client use IBinder to communicate with the bound service.
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            Log.d("bindservice","success")
+            //Log.d("bindservice","success")
             // We've bound to TryServerService, cast the IBinder and get TryServerService instance
             binder = service as TryServerService.TryServerBinder
             boundService = true
@@ -76,7 +78,7 @@ class ProximityService: Service(), BeaconUtils.BeaconListener {
         super.onCreate()
         BeaconUtils.listener = this
         //notification = NotificationCreator().createNotification(this)
-        Log.d(TAG,"create")
+        //Log.d(TAG,"create")
         //bind to server socket service and write the result to it
         Intent(this, TryServerService::class.java).also { intent ->
             bindService(intent, serveSocketConnection, Context.BIND_AUTO_CREATE)
@@ -112,8 +114,8 @@ class ProximityService: Service(), BeaconUtils.BeaconListener {
     override fun onEnterZone(tag: String) {
         stateSign = 0
 
-        proximityResult = "enter"+tag
-        //Log.d("onEnterZone", proximityResult)
+        proximityResult = tag
+        ///Log.d("onEnterZone", proximityResult)
         if (binder!=null){
             binder!!.setData(proximityResult)
         }
@@ -132,7 +134,7 @@ class ProximityService: Service(), BeaconUtils.BeaconListener {
     override fun onExitZone(tag: String) {
 
         stateSign = 1
-        proximityResult = "exit"+tag
+        proximityResult = tag
         //Log.d("onExitZone", proximityResult)
         if (binder!=null){
             binder!!.setData(proximityResult)
